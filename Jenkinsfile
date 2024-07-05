@@ -1,43 +1,65 @@
+@Library('mylibrary')_
 pipeline
 {
     agent any
     stages
     {
-        stage('ContDownload')
+        stage('ContDownload_Master')
         {
             steps
             {
-                git 'https://github.com/IntelliqDevops/newmaven.git'
+                script
+                {
+                    cicd.gitDownload("maven")
+                }
             }
         }
-        stage('ContBuild')
+        stage('ContBuild_Master')
         {
             steps
             {
-                sh 'mvn package'
+                script
+                {
+                    cicd.buildArtifact()
+                }
             }
         }
-        stage('ContDeployment')
+        stage('ContDeployment_Master')
         {
             steps
             {
-                sh 'scp /var/lib/jenkins/workspace/DeclarativePipeline2/webapp/target/webapp.war ubuntu@172.31.20.42:/var/lib/tomcat10/webapps/testapp.war'
+                script
+                {
+                    cicd.deployTomcat("DeclarativePipelinewithSharedLibraries","172.31.20.42","testapp")
+                }
             }
         }
-        stage('ContTesting')
+        stage('ContTesting_Master')
         {
             steps
             {
-                git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
-                sh 'java -jar /var/lib/jenkins/workspace/DeclarativePipeline2/testing.jar'
+                script
+                {
+                    cicd.gitDownload("FunctionalTesting")
+                    cicd.runSelenium("DeclarativePipelinewithSharedLibraries")
+                }
             }
-        }
-        stage('ContDelivery')
+        }   
+        stage('ContDelivery_Master')
         {
             steps
             {
-                sh 'scp /var/lib/jenkins/workspace/DeclarativePipeline2/webapp/target/webapp.war ubuntu@172.31.16.93:/var/lib/tomcat10/webapps/prodapp.war'
+                script
+                {
+                    cicd.deployTomcat("DeclarativePipelinewithSharedLibraries","172.31.16.93","prodapp")
+                }
             }
         }
+        
+        
+        
+        
+        
+        
     }
 }
